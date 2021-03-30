@@ -88,11 +88,11 @@ Go v1.5，并行 Mark & Sweep
 * 强三色不变性：黑色对象不会指向白色对象，只会指向灰色对象或者黑色对象。
 * 弱三色不变性 ：黑色对象指向的白色对象必须包含一条从灰色对象经由多个白色对象的可达路径。
 
-<img src="https://user-images.githubusercontent.com/35750880/112946486-24811e00-9168-11eb-9653-17ce994e48a0.png)" height = "300" alt="图片名称" align=center />
+<img src="https://user-images.githubusercontent.com/35750880/112946486-24811e00-9168-11eb-9653-17ce994e48a0.png" height = "300" alt="图片名称" align=center />
 
 一个白色对象被黑色对象引用，是注定无法通过这个黑色对象来保证自身存活的，与此同时，如果所有能到达它的灰色对象与它之间的可达关系全部遭到破坏，那么这个白色对象必然会被视为垃圾清除掉。 故当上述两个条件同时满足时，就会出现对象丢失的问题。如果这个白色对象下游还引用了其他对象，并且这条路径是指向下游对象的唯一路径，那么他们也是必死无疑的。
 
-<img src="https://user-images.githubusercontent.com/35750880/112946592-4c708180-9168-11eb-9e9c-9e0507b66300.png)" height = "300" alt="图片名称" align=center />
+<img src="https://user-images.githubusercontent.com/35750880/112946592-4c708180-9168-11eb-9e9c-9e0507b66300.png" height = "300" alt="图片名称" align=center />
 
 为了防止这种现象的发生，最简单的方式就是 STW，直接禁止掉其他用户程序对对象引用关系的干扰，但是 STW 的过程有明显的资源浪费，对所有的用户程序都有很大影响，如何能在保证对象不丢失的情况下合理的尽可能的提高 GC 效率，减少 STW 时间呢？
 
@@ -149,7 +149,7 @@ writePointer(slot, ptr):
 
 由于结合了 Yuasa 的删除写屏障和 Dijkstra 的插入写屏障的优点，只需要在GC的准备阶段STW（开启写屏障和开启辅助GC，统计root 对象的任务数量等），之后发扫描各个goroutine 的栈，使其变黑并一直保持，这个过程不需要 STW，而标记结束后，因为栈在扫描后始终是黑色的，也无需再进行 re-scan 操作了，减少了 STW 的时间。
 
-<img src="https://user-images.githubusercontent.com/35750880/112946876-9eb1a280-9168-11eb-88de-652be1f13a16.png)" height = "300" alt="图片名称" align=center />
+<img src="https://user-images.githubusercontent.com/35750880/112946876-9eb1a280-9168-11eb-88de-652be1f13a16.png" height = "300" alt="图片名称" align=center />
 
 为了移除栈的重扫描过程，除了引入混合写屏障之外，在垃圾收集的标记阶段，我们还需要将创建的所有新对象都标记成黑色，防止新分配的栈内存和堆内存中的对象被错误地回收，因为栈内存在标记阶段最终都会变为黑色，所以不再需要重新扫描栈空间。
 
@@ -170,7 +170,7 @@ GC 将会启动去释放不再被使用的内存。在标记期间，GC 会用�
 正在被使用的内存被标记为黑色，然而当前执行并不能够到达的那些内存会保持为白色。
 现在，我们可以使用 gcmarkBits 精确查看可用于分配的内存。Go 使用 gcmarkBits 赋值了 allocBits，这个操作就是内存清理。
 
-<img src="https://user-images.githubusercontent.com/35750880/112946980-c86ac980-9168-11eb-9d6e-c05669536b17.png)" height = "300" alt="图片名称" align=center />
+<img src="https://user-images.githubusercontent.com/35750880/112946980-c86ac980-9168-11eb-9d6e-c05669536b17.png" height = "300" alt="图片名称" align=center />
 
 然而必须每个 span 都来一次类似的处理，需要耗费大量时间。Go 的目标是在清理内存时不阻碍执行，并为此提供了两种策略。
 * 在后台启动一个 worker 等待清理内存，一个一个 mspan 处理
