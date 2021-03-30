@@ -1,9 +1,19 @@
 # GC
+
+### 目录
+1. Introduction
+1. Mark & Sweep
+2. Tri-color Mark & Sweep
+3. Write Barrier
+4. Stop The World
+
+## 引言
 现代高级编程语言管理内存的方式分为两种：自动和手动，像 C、C++ 等编程语言使用手动管理内存的方式，工程师编写代码过程中需要主动申请或者释放内存；而 PHP、Java 和 Go 等语言使用自动的内存管理系统，有内存分配器和垃圾收集器来代为分配和回收内存，其中垃圾收集器就是我们常说的 GC。主流的垃圾回收算法： 引用计数 追踪式垃圾回收.
 
 <img src="./01.png" height = "300" alt="图片名称" align=center />
 
 Go 现在用的三色标记法就属于追踪式垃圾回收算法的一种。
+
 ## Mark & Sweep
 ### 概念
 * STW:
